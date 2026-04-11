@@ -2,3 +2,6 @@ __pycache__/
 .ruff_cache/
 .venv/
 .env
+.aider.chat.history.md
+.aider.input.history
+.aider*
