@@ -5,14 +5,18 @@ from .service import User_service
 from infrastructure.database import get_db, AsyncSession
 from typing import Annotated
 from utils import create_access_token , decode_token , verify_password
-from datetime import timedelta
+from .dependencies import Refresh_token_bearer ,HTTPBearer ,Access_token_bearer
+from datetime import timedelta , datetime
 from fastapi.responses import JSONResponse
+from infrastructure.redis import add_jti_to_blocklist
 
 
 auth_router = APIRouter()
 user_service = User_service()
 DBSession = Annotated[AsyncSession, Depends(get_db)]
+refresh_token = Annotated[HTTPBearer , Depends(Refresh_token_bearer())]
 
+access_token = Annotated[HTTPBearer , Depends(Access_token_bearer())]
 
 
 @auth_router.post(
@@ -72,3 +76,30 @@ async def login_user(login_data:User_login , session:DBSession):
                     }
                 )
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN , detail='Invalid Email Or Password')
+
+@auth_router.get('/refresh')
+async def get_new_access_token(token_details: refresh_token):
+
+    expiry_date = token_details['exp']
+    if datetime.fromtimestamp(expiry_date) > datetime.now():
+        new_access_token = create_access_token(user_data=token_details['user'])
+
+    return JSONResponse(content={
+        'access_token':new_access_token
+        })
+
+    raise HTTPException (status_code=status.HTTP_400_BAD_REQUEST , detail='Invalid or expired token')
+
+
+@auth_router.get('/logout')
+async def revoke_token(token_details:access_token):
+    jti = token_details['jti']
+    await add_jti_to_blocklist(jti)
+
+    return JSONResponse(
+        content={
+            message:'You have logged out successfully '
+                },
+            status_code=status.HTTP_200_OK
+        )
+

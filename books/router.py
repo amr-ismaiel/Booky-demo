@@ -16,7 +16,8 @@ book_service = Book_service()
 
 DBSession = Annotated[AsyncSession, Depends(get_db)]
 
-access_token_bearer = Annotated[HTTPBearer ,Depends(Access_token_bearer)]
+access_token_bearer = Annotated[HTTPBearer ,Depends(Access_token_bearer())]
+#access_token_bearer = Access_token_bearer()
 
 
 @book_router.get("", response_model=list[Book])

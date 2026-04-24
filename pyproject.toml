@@ -12,6 +12,7 @@ dependencies = [
     "pydantic-settings>=2.13.1",
     "pyjwt>=2.12.1",
     "python-lsp-server>=1.14.0",
+    "redis>=7.4.0",
     "sqlalchemy>=2.0.48",
 ]
 [tool.ruff.format]
