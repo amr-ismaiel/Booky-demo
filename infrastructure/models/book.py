@@ -1,5 +1,7 @@
 import sqlalchemy.dialects.postgresql as pg
 
+from typing import TYPE_CHECKING
+
 from ..database import (
     DATE,
     UTC,
@@ -10,7 +12,13 @@ from ..database import (
     date,
     datetime,
     mapped_column,
+    ForeignKey,
+    relationship
 )
+
+if TYPE_CHECKING:
+    # هذا الاستيراد يتم فقط من أجل الـ Type Hinting ولا يسبب Circular Import
+    from .user import user
 
 
 class book (Base):
@@ -23,8 +31,12 @@ class book (Base):
     published_date:Mapped[date | None] = mapped_column(DATE)
     page_count:Mapped[int] = mapped_column(Integer)
     language:Mapped[str] = mapped_column(String(50))
+    user_id:Mapped[int] = mapped_column(ForeignKey('users.id') ,nullable=False , index=True)
     created_at:Mapped[datetime] = mapped_column(pg.TIMESTAMP(timezone=True) , default=lambda:datetime.now(UTC))
     updated_at:Mapped[datetime] = mapped_column(pg.TIMESTAMP(timezone=True) , default=lambda:datetime.now(UTC))
+
+
+    creator: Mapped['user'] = relationship('user',back_populates="books")
 
 
 

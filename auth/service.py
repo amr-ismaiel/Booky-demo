@@ -37,6 +37,7 @@ class User_service:
 
         user_data_dict['password_hash'] = user_data_dict.pop('password')
         user_data_dict['password_hash'] = hashed_pwd
+        user_data_dict['role']='user'
         new_user = user(**user_data_dict )
 
 

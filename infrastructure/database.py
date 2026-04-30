@@ -8,8 +8,9 @@ from sqlalchemy.orm import (
     Mapped,
     deferred,
     mapped_column,
-    relationships,
+    relationship,
     undefer,
+
 )
 
 from config import Config
@@ -39,4 +40,4 @@ async def get_db ()-> AsyncSession:
         yield session
 
 
-__all__ = ["DATE", "UTC", "AsyncSession", "Base", "Boolean", "ForeignKey", "Integer", "Mapped", "String", "Text", "date", "datetime", "deferred", "engine", "get_db", "mapped_column", "relationships", "timezone" ,"undefer"]
+__all__ = ["DATE", "UTC", "AsyncSession", "Base", "Boolean", "ForeignKey", "Integer", "Mapped", "String", "Text", "date", "datetime", "deferred", "engine", "get_db", "mapped_column", "relationship", "timezone" ,"undefer"]

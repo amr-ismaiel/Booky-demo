@@ -3,17 +3,22 @@ from fastapi.exceptions import HTTPException
 from .schemas import User_create, User_response , User_login
 from .service import User_service
 from infrastructure.database import get_db, AsyncSession
-from typing import Annotated
+from typing import Annotated , Any
 from utils import create_access_token , decode_token , verify_password
-from .dependencies import Refresh_token_bearer ,HTTPBearer ,Access_token_bearer
+from .dependencies import Refresh_token_bearer, HTTPBearer, Access_token_bearer, get_current_user,Current_user, Role_checker
 from datetime import timedelta , datetime
 from fastapi.responses import JSONResponse
 from infrastructure.redis import add_jti_to_blocklist
 
 
 auth_router = APIRouter()
+
 user_service = User_service()
+
 DBSession = Annotated[AsyncSession, Depends(get_db)]
+
+role_checker = Role_checker(['admin'])
+role_authorize = Annotated[bool,Depends(Role_checker(['admin']))]
 refresh_token = Annotated[HTTPBearer , Depends(Refresh_token_bearer())]
 
 access_token = Annotated[HTTPBearer , Depends(Access_token_bearer())]
@@ -52,7 +57,8 @@ async def login_user(login_data:User_login , session:DBSession):
             access_token = create_access_token(
                 user_data={
                     'email':user.email,
-                    'user_id':str(user.id)
+                    'user_id':str(user.id),
+                    'role':user.role
                     }
                 )
             refresh_token = create_access_token(
@@ -91,6 +97,13 @@ async def get_new_access_token(token_details: refresh_token):
     raise HTTPException (status_code=status.HTTP_400_BAD_REQUEST , detail='Invalid or expired token')
 
 
+@auth_router.get('/me')
+async def get_current_user(current_user:Current_user , authorized: role_authorize):
+
+
+    return current_user
+
+
 @auth_router.get('/logout')
 async def revoke_token(token_details:access_token):
     jti = token_details['jti']
@@ -98,7 +111,7 @@ async def revoke_token(token_details:access_token):
 
     return JSONResponse(
         content={
-            message:'You have logged out successfully '
+            message:'You have logged out successfully ',
                 },
             status_code=status.HTTP_200_OK
         )

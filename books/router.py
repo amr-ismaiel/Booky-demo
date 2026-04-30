@@ -28,8 +28,13 @@ async def get_all_books(session: DBSession , user_details : access_token_bearer)
 
 
 @book_router.post("", status_code=status.HTTP_201_CREATED)
-async def create_book(book_data: Book_create, session: DBSession):
-    new_book = await book_service.create_book(book_data, session)
+async def create_book(
+    book_data: Book_create,
+    session: DBSession,
+    token_details:access_token_bearer
+    ):
+    user_id = int(token_details.get('user')['user_id'])
+    new_book = await book_service.create_book(book_data,user_id, session)
     return new_book
 
 

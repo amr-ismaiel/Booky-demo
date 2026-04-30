@@ -27,13 +27,13 @@ class Book_service:
 
 
 
-    async def create_book(self , book_data:Book_create , session:AsyncSession):
+    async def create_book(self , book_data:Book_create, user_id:int, session:AsyncSession):
         book_data_dict = book_data.model_dump()
 
         new_book = book(**book_data_dict)
 
         new_book.published_date = datetime.strptime(book_data_dict['published_date'] , '%Y-%m-%d')
-
+        new_book.user_id = user_id
         session.add(new_book)
         await session.commit()
         await session.refresh(new_book) # Get the ID and any DB defaults
